@@ -1,0 +1,68 @@
+services:
+  backend:
+    build:
+      context: ./yfall
+      dockerfile: Dockerfile
+    container_name: yfall-docker_backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./yfall:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DEBUG=True
+      - DB_NAME=yfall_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
+    image: yfall-docker_backend_image
+
+  frontend:
+    build:
+      context: ./yfall-frontend
+      dockerfile: Dockerfile
+    container_name: yfall-docker_frontend
+    command: npm start
+    volumes:
+      - ./yfall-frontend:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
+    image: yfall-docker_frontend_image
+
+  db:
+    image: postgres:13  # A chave 'image' é suficiente, sem a necessidade de 'build' ou outras propriedades.
+    container_name: yfall-docker_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: yfall_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "yfall_db"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
+
+volumes:
+  postgres_data:

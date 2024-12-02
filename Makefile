@@ -8,7 +8,7 @@ build:
 	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) build
 
 up: build
-	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up --build
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d --build
 
 down:
 	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) down
